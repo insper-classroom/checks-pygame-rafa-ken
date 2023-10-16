@@ -13,6 +13,7 @@ def inicializa():
     assets = {}
     assets['nave'] = pygame.image.load('assets/img/playerShip1_orange.png')
     assets['fundo'] = pygame.image.load('assets/img/starfield.png')
+    assets['coracao'] = pygame.font.Font('assets/font/PressStart2P.ttf', 20)
 
     return window, assets
 
@@ -40,6 +41,11 @@ def desenha(window, assets, estrelas):
     # desenha estrelas
     for x, y in estrelas:
         pygame.draw.circle(window, (255, 255, 255), (x, y), 1, 5)
+    
+    # Desenha o texto das vidas no canto superior esquerdo
+    coracoes = chr(9829) * 3
+    text_surface = assets['coracao'].render(coracoes, True, (255, 0, 0))
+    window.blit(text_surface, (10, 10))
 
     # atualiza estado do jogo
     pygame.display.update()  
