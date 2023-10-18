@@ -1,71 +1,105 @@
-# TODO: Escreva seu código aqui (fique à vontade para adicionar outros arquivos, mas use este como ponto de entrada)
 import pygame
 import random
-#inicializa
+
+#----------------------------------------------------------------------------------------------------------#
+# Função que inicializa o jogo: cria a janela, carrega recursos e define o estado inicial.
 def inicializa():
     pygame.init()
+    janela = pygame.display.set_mode((400, 600))
+    pygame.display.set_caption('Jogo do Rafak')   
 
-    #janela
-    window = pygame.display.set_mode((400, 600))
-    pygame.display.set_caption('Jogo do Rafak')
-
-    #dicionario assets
+    # Carrega imagens e fontes como recursos do jogo.
     assets = {}
     assets['nave'] = pygame.image.load('assets/img/playerShip1_orange.png')
     assets['fundo'] = pygame.image.load('assets/img/starfield.png')
     assets['coracao'] = pygame.font.Font('assets/font/PressStart2P.ttf', 20)
+    assets['fonte'] = pygame.font.Font('assets/font/PressStart2P.ttf', 13)
 
-    return window, assets
+    # Define o estado inicial do jogo, incluindo o tempo, posição e velocidade da nave.
+    state = {}
+    state['t0'] = -1
+    state['limite_fps'] = pygame.time.Clock()
+    state['posicao_nave'] = [165,500]
 
-def recebe_eventos():
-    #inicia estruturas de dados
-    game = True
+    return janela, assets, state
 
-    # loop principal
-    while game:
-        #trata eventos
-        for event in pygame.event.get():
-            #verifica consequências
-            if event.type == pygame.QUIT:
-                game = False
-        return game
-
-def desenha(window, assets, estrelas):
-    # gera saídas
-    window.fill((0, 0, 0))
-    fundo = pygame.transform.scale(assets['fundo'], (400, 600))
-    nave = pygame.transform.scale(assets['nave'], (69, 38))
-    window.blit(fundo, (0, 0))
-    window.blit(nave, (162, 530))
-
-    # desenha estrelas
-    for x, y in estrelas:
-        pygame.draw.circle(window, (255, 255, 255), (x, y), 1, 5)
+#----------------------------------------------------------------------------------------------------------#
+# Função que trata eventos do jogo, como fechar a janela e controlar a velocidade da nave.
+def trata_eventos(state):
+    jogo = True
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            jogo = False 
     
-    # Desenha o texto das vidas no canto superior esquerdo
+    return jogo
+
+#----------------------------------------------------------------------------------------------------------#
+# Função que desenha os elementos do jogo na janela.
+def desenha(janela, recursos, estrelas, state):
+    janela.fill((0, 0, 0))  # Preenche a janela com a cor preta.
+    fundo = pygame.transform.scale(recursos['fundo'], (400, 600))
+    nave = pygame.transform.scale(recursos['nave'], (69, 38))
+    janela.blit(fundo, (0, 0))
+
+    # Desenha a nave na nova posição.
+    janela.blit(nave, state['posicao_nave'])
+    
+    # Desenha estrelas na tela.
+    for x, y in estrelas:
+        pygame.draw.circle(janela, (255, 255, 255), (x, y), 1, 5)
+    
+    # Desenha corações na tela.
     coracoes = chr(9829) * 3
-    text_surface = assets['coracao'].render(coracoes, True, (255, 0, 0))
-    window.blit(text_surface, (10, 10))
+    superficie_texto = recursos['coracao'].render(coracoes, True, (255, 0, 0))
+    janela.blit(superficie_texto, (10, 10))
+    
+    # Calcula e exibe os quadros por segundo (FPS).
+    fps = 0
+    tempo_delta = 0.0001
+    t1 = pygame.time.get_ticks()
 
-    # atualiza estado do jogo
-    pygame.display.update()  
-    return window
+    if state['t0'] >= 0:
+        tempo_delta = t1 - state['t0']
 
+    state['t0'] = t1
+    fps = 1000 / tempo_delta
+    texto_fps = recursos['fonte'].render(f'FPS: {fps:.2f}', True, (255, 255, 255))
+    janela.blit(texto_fps, (250, 587))
+    state['limite_fps'].tick(60)
+
+    pygame.display.update()
+    return janela
+
+#----------------------------------------------------------------------------------------------------------#
+# Função que gera coordenadas aleatórias para estrelas.
 def gera_estrelas():
-    estrelas = [(random.randint(0, 400), random.randint(0, 600)) for _ in range(40)]
+    estrelas = [(random.randint(0, 400), random.randint(0, 600)) for _ in range(200)]
     return estrelas
 
-def game_loop(window, assets):
-    game = True
-    estrelas = gera_estrelas() 
-    # loop principal
-    while game:
-        # trata eventos
-        game = recebe_eventos()
-        # gera saídas
-        desenha(window, assets, estrelas)
-        if game == False:
-            return False
+#----------------------------------------------------------------------------------------------------------#
+# Função que executa o loop principal do jogo.
+def loop_jogo(janela, recursos, state):
+    jogo = True
+    estrelas = gera_estrelas()
+    
+    # Loop principal do jogo.
+    while jogo:
+        jogo = trata_eventos(state)  # Trata eventos do jogo.
+        desenha(janela, recursos, estrelas, state)  # Desenha elementos na janela.
 
-janela, assets = inicializa()
-loop = game_loop(janela, assets)
+    return False
+
+#----------------------------------------------------------------------------------------------------------#
+# Função principal que inicia o jogo e chama o loop principal.
+def principal():
+    janela, recursos, state = inicializa()
+    loop_jogo(janela, recursos, state)
+    pygame.quit()
+
+#----------------------------------------------------------------------------------------------------------#
+if __name__ == "__main__":
+    principal()  
+
+
+
+
