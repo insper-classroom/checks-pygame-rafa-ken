@@ -3,10 +3,12 @@ import random
 
 #----------------------------------------------------------------------------------------------------------#
 # Função que inicializa o jogo: cria a janela, carrega recursos e define o estado inicial.
+import pygame
+
 def inicializa():
     pygame.init()
     janela = pygame.display.set_mode((400, 600))
-    pygame.display.set_caption('Jogo do Rafak')   
+    pygame.display.set_caption('Jogo do Rafak')
 
     # Carrega imagens e fontes como recursos do jogo.
     assets = {}
@@ -19,18 +21,44 @@ def inicializa():
     state = {}
     state['t0'] = -1
     state['limite_fps'] = pygame.time.Clock()
-    state['posicao_nave'] = [165,500]
+    state['posicao_nave'] = [165, 500]
+    state['vel_nave'] = [0, 0]
 
     return janela, assets, state
 
-#----------------------------------------------------------------------------------------------------------#
 # Função que trata eventos do jogo, como fechar a janela e controlar a velocidade da nave.
 def trata_eventos(state):
     jogo = True
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
-            jogo = False 
-    
+            jogo = False
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_w:
+                state['vel_nave'][1] -= 2
+            elif evento.key == pygame.K_s:
+                state['vel_nave'][1] += 2
+            elif evento.key == pygame.K_a:  
+                state['vel_nave'][0] -= 2
+            elif evento.key == pygame.K_d:
+                state['vel_nave'][0] += 2
+        if evento.type == pygame.KEYUP:
+            state['vel_nave'] = [0, 0]
+
+    # Atualiza a posição da nave com base na velocidade.
+    state['posicao_nave'][0] += state['vel_nave'][0]
+    state['posicao_nave'][1] += state['vel_nave'][1]
+
+    # Corrige a verificação das posições x e y da nave.
+    if state['posicao_nave'][0] < 0:
+        state['posicao_nave'][0] = 0
+    elif state['posicao_nave'][0] > 331:
+        state['posicao_nave'][0] = 331
+
+    if state['posicao_nave'][1] < 0:
+        state['posicao_nave'][1] = 0
+    elif state['posicao_nave'][1] > 562:
+        state['posicao_nave'][1] = 562
+
     return jogo
 
 #----------------------------------------------------------------------------------------------------------#
@@ -40,9 +68,6 @@ def desenha(janela, recursos, estrelas, state):
     fundo = pygame.transform.scale(recursos['fundo'], (400, 600))
     nave = pygame.transform.scale(recursos['nave'], (69, 38))
     janela.blit(fundo, (0, 0))
-
-    # Desenha a nave na nova posição.
-    janela.blit(nave, state['posicao_nave'])
     
     # Desenha estrelas na tela.
     for x, y in estrelas:
@@ -66,6 +91,9 @@ def desenha(janela, recursos, estrelas, state):
     texto_fps = recursos['fonte'].render(f'FPS: {fps:.2f}', True, (255, 255, 255))
     janela.blit(texto_fps, (250, 587))
     state['limite_fps'].tick(60)
+
+    # Desenha a nave na nova posição.
+    janela.blit(nave, state['posicao_nave'])
 
     pygame.display.update()
     return janela
