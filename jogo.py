@@ -25,7 +25,7 @@ def inicializa():
     state['barulho_colisao'] = pygame.mixer.Sound('assets/snd/expl6.wav')
     state['vel_meteoro'] = [0, 0]
     state['vidas'] = 3
-    state['oof'] = pygame.mixer.Sound('assets/snd/roblox-death-sound_1.mp3')
+    state['of'] = pygame.mixer.Sound('assets/snd/roblox-death-sound_1.mp3')
     # musica
     pygame.mixer.music.load('assets/snd/tgfcoder-FrozenJam-SeamlessLoop.ogg')
     pygame.mixer.music.play()
@@ -143,7 +143,7 @@ def loop_jogo(janela, recursos, state):
 
             if verifica_colisoes(state['posicao_nave'] + [69, 38], meteoro['posicao'] + [30, 30]):
                 state['vidas'] -= 1
-                state['oof'].play()
+                state['of'].play()
                 meteoro['posicao'] = [random.randint(0, 400), random.randint(-30, 0)]
                 meteoro['velocidade'] = [0, random.randint(1, 5)]
 
